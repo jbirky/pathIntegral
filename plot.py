@@ -20,9 +20,12 @@ if __name__ == '__main__':
 
 		tstep = np.arange(0,len(vals),1)
 
-		plt.figure(figsize=[8,6])
+		fname = file.split('.dat')[0]
+
+		plt.figure(figsize=[10,6])
 		plt.plot(tstep, vals)
 		plt.xlabel('Timestep', fontsize=15)
-		plt.ylabel(file.split('.dat')[0], fontsize=15)
+		plt.ylabel(fname, fontsize=15)
 		plt.show()
+		plt.savefig('plots/' + fname + '.png')
 		plt.close()

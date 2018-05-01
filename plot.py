@@ -18,7 +18,7 @@ if __name__ == '__main__':
 		vals = []
 		with open('expected/' + file) as f:
 			for line in f:
-				vals.append(line)
+				vals.append(float(line))
 
 		tstep = np.arange(0,len(vals),1)
 
@@ -28,8 +28,8 @@ if __name__ == '__main__':
 		plt.plot(tstep, vals)
 		plt.xlabel('Timestep', fontsize=15)
 		plt.ylabel(fname, fontsize=15)
-		plt.show()
 		plt.savefig('plots/' + fname + '.png')
+		plt.show()
 		plt.close()
 
 
@@ -41,7 +41,7 @@ if __name__ == '__main__':
 		vals = []
 		with open('wave_prob/' + file) as f:
 			for line in f:
-				vals.append(line)
+				vals.append(float(line))
 
 		xvals = np.linspace(-4, 4, len(vals))
 
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 		plt.plot(xvals, vals)
 		plt.xlabel('Timestep', fontsize=15)
 		plt.ylabel(fname, fontsize=15)
-		plt.show()
 		plt.savefig('plots/' + fname + '.png')
+		plt.show()
 		plt.close()
 

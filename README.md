@@ -7,10 +7,12 @@ Quantum particle in a harmonic oscillator potential with gaussian initial condit
 ### Usage
 
 Compute wave function:
+
 `make`
 
 Make plots and animation:
-`python plot.py 
-convert -delay 20 -loop 0 plots/phi/*.png plots/wave_evolution.gif`
+`python plot.py` 
+
+`convert -delay 20 -loop 0 plots/phi/*.png plots/wave_evolution.gif`
 
 yay.

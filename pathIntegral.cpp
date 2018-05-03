@@ -31,14 +31,13 @@ double	XD	= 4;				// max s range
 double 	PI  = 3.14159265358;	
 double	T0 	= 2 * PI;
 int 	P 	= 16;
-double	T 	= T0/P;				// period
-double	DEL_T 	= T0 / 128;		// time step size
-double	DEL_X	= (XD - X0)/D;	// spatial step size
+double	T 	= T0/P;						// period
+double	DEL_T 	= T0 / 128;				// time step size
+double	DEL_X	= (XD - X0)/(D - 1);	// spatial step size
 double	ALPHA	= 2;
 
 double sin(double x);
 double cos(double x);
-double exp(double x);
 
 
 // ===================================
@@ -47,9 +46,8 @@ double exp(double x);
 
 vector<cdouble> phiInit();
 matrix 			returnKep();
-matrix 			returnPropagator(int n);					// return propagator matrix at time step n
-vector<cdouble> returnWaveFunction(int n);					// return wave function at time step n
-void			saveWaveFunctions(int n);					// save wave functions, probability amplitudes, and expected values at each time step
+matrix 			returnPropagator();							// return propagator matrix at time step N
+void			saveWaveFunctions();					// save wave functions, probability amplitudes, and expected values at each time step
 vector<double> 	returnProbability(vector<cdouble> wf);		// return wave function squared
 vector<cdouble> normalizeWF(vector<cdouble> wf);			// normalize wave function such that sum(wf* wf) = 1
 
@@ -78,39 +76,54 @@ int main()
 
 	// ========================================= 
 
-	// K = returnPropagator(N);
-	// printMatrixC(K);
+	// matrix K = returnPropagator();
+	// // printMatrixC(K);
+	// string save_K = "prop_matrix/Kprop.dat";
+	// saveFileC(K, save_K);
 
 
-	// vector<cdouble> wf = returnWaveFunction(N);
-	// printMatrixC(wf);
-
-	saveWaveFunctions(N);
+	saveWaveFunctions();
 
 	// ========================================= 
 
-	// matrix K;
-	// string mat_name;
-	// for (int i=0; i<N; i++) {
-	// 	K = returnPropagator(i);
-	// 	mat_name = "prop_matrix/Kprop" + to_string(i) + ".dat";
-	// 	saveFileC(K, mat_name);
-	// }
+
+	// matrix Kep = returnKep();
+	// string save_K = "prop_matrix/Kep.dat";
+	// saveFileC(Kep, save_K);
+
 
 	// vector<cdouble> phi0 = phiInit();
 	// string phi0_name = "wave_func/phi0.dat";
-	// saveFileC(phi0, phi0_name);
+	// // saveFileC(phi0, phi0_name);
 
 	// vector<double> phi_sq0 = returnProbability(phi0); 
 	// string phi0_sq = "wave_prob/phi_sq0.dat";
-	// saveFileR(phi_sq0, phi0_sq);
+	// // saveFileR(phi_sq0, phi0_sq);
 
-	// matrix K1 = returnPropagator(1);
+	// matrix K1 = returnPropagator();
 	// matrix phi1 = matrixVectorMultiply(K1, phi0);
-	// phi1 = normalizeWF(phi1);
-	// vector<double> phi_sq1 = returnProbability(phi1); 
+	// matrix phi1_norm = normalizeWF(phi1);
+	// vector<double> phi_sq1 = returnProbability(phi1_norm); 
 	// string phi1_sq = "wave_prob/phi_sq1.dat";
 	// saveFileR(phi_sq1, phi1_sq);
+
+	// printMatrixC(phi1);
+
+	// printMatrixC(K1);
+
+	// matrix a(4,0);
+	// a[0] = cdouble (5,0);
+	// a[1] = cdouble (0,5);
+	// a[2] = cdouble (5,0);
+	// a[3] = cdouble (0,5);
+
+	// matrix b(2,0);
+	// b[0] = cdouble (4,0);
+	// b[1] = cdouble (0,4);
+
+	// matrix ab(2,0);
+	// ab = matrixVectorMultiply(a,b);
+	// printMatrixC(ab);
 	
 	// =========================================
 
@@ -158,7 +171,7 @@ matrix returnKep()
 	for (int i=0; i<D; i++) {
 		for (int j=0; j<D; j++) {
 
-			efactor = I*DEL_T/h * (.5*m*pow(x(j)-x(i),2) / pow(DEL_T,2) - V*(x(j)-x(i))/2);
+			efactor = I*DEL_T/h * (.5*m*pow((x(j)-x(i))/DEL_T, 2) - V * pow(((x(j)+x(i))/2.), 2));
 			// cout<<exp(efactor)<<endl;
 
 			Kep[i*D + j] = exp(efactor) / A;
@@ -169,35 +182,35 @@ matrix returnKep()
 }
 
 
-matrix returnPropagator(int n) 
+matrix returnPropagator()
 {
+	// Return the Nth step propagator matrix
+
 	matrix Kep = returnKep();
-	matrix K(D*D,0);
-	// matrix K = Kep;
+	// matrix K(D*D,0);
+	matrix K = Kep;
 
 	// Set K equal to identitity matrix for time step 0
-	for (int i=0; i<D; i++) {
-		for (int j=0; j<D; j++) {
-			if (i==j) {
-				K[i*D + j] = 1;
-			} else {
-				K[i*D + j] = 0;
-			}
-		}
-	}
+	// for (int i=0; i<D; i++) {
+	// 	for (int j=0; j<D; j++) {
+	// 		if (i==j) {
+	// 			K[i*D + j] = 1;
+	// 		} else {
+	// 			K[i*D + j] = 0;
+	// 		}
+	// 	}
+	// }
 
 	// Multiply to the nth power to propagate by n time steps
-	for (int p=0; p<n; p++) {
+	for (int n=1; n<N; n++) {
 		K = matrixMatrixMultiply(K, Kep);
 	}
 
 	// Multiply by step size factors
-	double factor = pow(DEL_X, n-1) * DEL_T;
+	double factor = pow(DEL_X, N-1);// * DEL_T;
 
-	for (int i=0; i<D; i++) {
-		for (int j=0; j<D; j++) {
-			K[i*D + j] *= factor;
-		}
+	for (int i=0; i<K.size(); i++) {
+		K[i] *= factor;
 	}
 
 	return K;
@@ -228,24 +241,6 @@ vector<cdouble> normalizeWF(vector<cdouble> wf)
 }
 
 
-vector<cdouble> returnWaveFunction(int n)
-{
-	// Get discretized initial wave function array
-	vector<cdouble> phi0 = phiInit();
-
-	// Get propagator matrix after n timesteps
-	vector<cdouble> Kn = returnPropagator(n);
-
-	// Multiply propagator matrix and initial wave function
-	vector<cdouble> wf = matrixVectorMultiply(Kn, phi0);
-
-	// Normalize wave function
-	vector<cdouble> norm_wf = normalizeWF(wf);
-
-	return norm_wf;
-}
-
-
 vector<double> returnProbability(vector<cdouble> wf) 
 {
 	vector<double> wf_sq(D,0);
@@ -258,33 +253,45 @@ vector<double> returnProbability(vector<cdouble> wf)
 }
 
 
-void saveWaveFunctions(int n)
+void saveWaveFunctions()
 {
-	vector<cdouble> wf;
+	vector<cdouble> wf_n;
+	vector<cdouble> wf_n_1;
+	vector<cdouble> wf_norm;
 	vector<double> wf_sq;
 	string sname0;
 	string sname1;
-	vector<double> avg_pos(n,0);
-	vector<double> avg_eng(n,0);
-	vector<double> avg_kin(n,0);
-	vector<double> avg_pot(n,0);
+	vector<double> avg_pos(P,0);
+	vector<double> avg_eng(P,0);
+	vector<double> avg_kin(P,0);
+	vector<double> avg_pot(P,0);
 
-	for (int i=0; i<n; i++) {
+	matrix K = returnPropagator();
+
+	for (int i=0; i<P; i++) {
+
+		if (i == 0) {
+			wf_n = phiInit();
+			wf_n_1 = wf_n;
+		} else {
+			wf_n = matrixVectorMultiply(K, wf_n_1);
+			wf_n_1 = wf_n;
+		}
 
 		// Save wave function vectors
-		wf = returnWaveFunction(i);
+		wf_norm = normalizeWF(wf_n);
 		sname0 = "wave_func/phi" + to_string(i) + ".dat";
-		saveFileC(wf, sname0);
+		saveFileC(wf_norm, sname0);
 
 		// Save probability amplitudes
-		wf_sq = returnProbability(wf);
+		wf_sq = returnProbability(wf_norm);
 		sname1 = "wave_prob/phi_sq" + to_string(i) + ".dat";
 		saveFileR(wf_sq, sname1);
 
 		// Compute average values
-		avg_pos[i] = avgPosition(wf);
-		avg_pot[i] = avgPotential(wf);
-		avg_kin[i] = avgKinetic(wf);
+		avg_pos[i] = avgPosition(wf_norm);
+		avg_pot[i] = avgPotential(wf_norm);
+		avg_kin[i] = avgKinetic(wf_norm);
 		avg_eng[i] = avg_pot[i] + avg_kin[i];
 	}
 
@@ -339,7 +346,7 @@ double avgPotential(vector<cdouble> wf)
 	double avg_pot;
 
 	for (int i=0; i<D; i++) {
-		avg_pot = (conj(wf[i]) * .5*m*w*pow(x(i),2) * wf[i]).real();
+		avg_pot += (conj(wf[i]) * .5*m*w*pow(x(i),2) * wf[i]).real();
 	}
 
 	return avg_pot;
@@ -425,8 +432,9 @@ vector<cdouble> matrixVectorMultiply(vector<cdouble> m1, vector<cdouble> m2) {
 	vector<cdouble> prod(D,0);
 
     for (int i=0; i<D; i++) {
+    	prod[i] = 0;
     	for (int j=0; j<D; j++) {
-    		prod[i] += m1[i*D + j] + m2[j];
+    		prod[i] += m1[i*D + j] * m2[j];
     	}
     }
 

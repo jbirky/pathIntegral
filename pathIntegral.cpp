@@ -47,7 +47,7 @@ double cos(double x);
 vector<cdouble> phiInit();
 matrix 			returnKep();
 matrix 			returnPropagator();							// return propagator matrix at time step N
-void			saveWaveFunctions();					// save wave functions, probability amplitudes, and expected values at each time step
+void			saveWaveFunctions();						// save wave functions, probability amplitudes, and expected values at each time step
 vector<double> 	returnProbability(vector<cdouble> wf);		// return wave function squared
 vector<cdouble> normalizeWF(vector<cdouble> wf);			// normalize wave function such that sum(wf* wf) = 1
 
@@ -393,7 +393,7 @@ vector<cdouble> vectorVectorMultiply(vector<cdouble> m1, vector<cdouble> m2) {
 	vector<cdouble> prod(D,0);
 
     for (int i=0; i<D; i++) {
-    	prod[i] += m1[i] + m2[i];
+    	prod[i] += m1[i] * m2[i];
     }
 
     return prod;

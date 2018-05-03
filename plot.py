@@ -68,6 +68,13 @@ if __name__ == '__main__':
 
 	# Plot probability functions 
 
+	avg_eng_array = []
+	with open('expected/avg_eng.dat') as f:
+		for line in f:
+				avg_eng_array.append(float(line))
+
+	avg_eng_val = np.mean(avg_eng_array)
+
 	prob_files = os.listdir('wave_prob/')
 
 	for file in prob_files:
@@ -75,6 +82,7 @@ if __name__ == '__main__':
 		with open('wave_prob/' + file) as f:
 			for line in f:
 				vals.append(float(line))
+		vals = np.array(vals)
 
 		xvals = np.linspace(-4, 4, len(vals))
 
@@ -82,10 +90,11 @@ if __name__ == '__main__':
 		num = fname.split('phi_sq')[1]
 
 		plt.figure(figsize=[12,6])
-		plt.plot(xvals, vals, label=r'$t_{s} = %s$'%(num), color='r')
+		plt.plot(xvals, vals + avg_eng_val, label=r'$t_{s} = %s$'%(num), color='r')
 		plt.plot(xvals, phiInit(xvals), color='k', alpha=.8, label=r'$V(x) = \frac{1}{2}m\omega^{2}$')
+		plt.axhline(y=avg_eng_val, linestyle='--', color='b', alpha=.4, label=r'$<E>$')
 		plt.axvline(x=.75, linestyle='--', color='k', alpha=.4)
-		plt.ylim([0,1])
+		plt.ylim([0,1.8])
 		plt.xlabel(r'$x$', fontsize=15)
 		plt.ylabel(r'$|\Psi(x,t)|^{2}$', fontsize=15)
 		plt.legend(loc='upper right')

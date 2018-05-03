@@ -81,50 +81,8 @@ int main()
 	// string save_K = "prop_matrix/Kprop.dat";
 	// saveFileC(K, save_K);
 
-
 	saveWaveFunctions();
 
-	// ========================================= 
-
-
-	// matrix Kep = returnKep();
-	// string save_K = "prop_matrix/Kep.dat";
-	// saveFileC(Kep, save_K);
-
-
-	// vector<cdouble> phi0 = phiInit();
-	// string phi0_name = "wave_func/phi0.dat";
-	// // saveFileC(phi0, phi0_name);
-
-	// vector<double> phi_sq0 = returnProbability(phi0); 
-	// string phi0_sq = "wave_prob/phi_sq0.dat";
-	// // saveFileR(phi_sq0, phi0_sq);
-
-	// matrix K1 = returnPropagator();
-	// matrix phi1 = matrixVectorMultiply(K1, phi0);
-	// matrix phi1_norm = normalizeWF(phi1);
-	// vector<double> phi_sq1 = returnProbability(phi1_norm); 
-	// string phi1_sq = "wave_prob/phi_sq1.dat";
-	// saveFileR(phi_sq1, phi1_sq);
-
-	// printMatrixC(phi1);
-
-	// printMatrixC(K1);
-
-	// matrix a(4,0);
-	// a[0] = cdouble (5,0);
-	// a[1] = cdouble (0,5);
-	// a[2] = cdouble (5,0);
-	// a[3] = cdouble (0,5);
-
-	// matrix b(2,0);
-	// b[0] = cdouble (4,0);
-	// b[1] = cdouble (0,4);
-
-	// matrix ab(2,0);
-	// ab = matrixVectorMultiply(a,b);
-	// printMatrixC(ab);
-	
 	// =========================================
 
 	clock_t end = clock();
@@ -187,19 +145,7 @@ matrix returnPropagator()
 	// Return the Nth step propagator matrix
 
 	matrix Kep = returnKep();
-	// matrix K(D*D,0);
 	matrix K = Kep;
-
-	// Set K equal to identitity matrix for time step 0
-	// for (int i=0; i<D; i++) {
-	// 	for (int j=0; j<D; j++) {
-	// 		if (i==j) {
-	// 			K[i*D + j] = 1;
-	// 		} else {
-	// 			K[i*D + j] = 0;
-	// 		}
-	// 	}
-	// }
 
 	// Multiply to the nth power to propagate by n time steps
 	for (int n=1; n<N; n++) {
@@ -261,14 +207,14 @@ void saveWaveFunctions()
 	vector<double> wf_sq;
 	string sname0;
 	string sname1;
-	vector<double> avg_pos(P,0);
-	vector<double> avg_eng(P,0);
-	vector<double> avg_kin(P,0);
-	vector<double> avg_pot(P,0);
+	vector<double> avg_pos(P+1,0);
+	vector<double> avg_eng(P+1,0);
+	vector<double> avg_kin(P+1,0);
+	vector<double> avg_pot(P+1,0);
 
 	matrix K = returnPropagator();
 
-	for (int i=0; i<P; i++) {
+	for (int i=0; i<P+1; i++) {
 
 		if (i == 0) {
 			wf_n = phiInit();
@@ -313,10 +259,10 @@ void saveWaveFunctions()
 
 double avgPosition(vector<cdouble> wf)
 {
-	double avg_pos;
+	double avg_pos = 0;
 	
 	for (int i=0; i<D; i++) {
-		avg_pos += (conj(wf[i]) * x(i) * wf[i]).real();
+		avg_pos += (conj(wf[i]) * x(i) * wf[i]).real() * DEL_X;
 	}
 
 	return avg_pos;
@@ -325,15 +271,15 @@ double avgPosition(vector<cdouble> wf)
 
 double avgKinetic(vector<cdouble> wf)
 {
-	double avg_kin;
+	double avg_kin = 0;
 
 	for (int i=0; i<D; i++) {
 		if (i == 0) {
-			avg_kin += avg_kin += (-h*h / (2*m)) * ((conj(wf[i]) * wf[i+1] - 2.*wf[i])).real();
+			avg_kin += (-h*h / (2*m)) * (conj(wf[i]) * (wf[i+1] - 2.*wf[i])).real() / DEL_X;
 		} else if (i == D) {
-			avg_kin += (-h*h / (2*m)) * ((conj(wf[i]) - 2.*wf[i] + wf[i-1])).real();
+			avg_kin += (-h*h / (2*m)) * (conj(wf[i]) * (- 2.*wf[i] + wf[i-1])).real() / DEL_X;
 		} else {
-			avg_kin += (-h*h / (2*m)) * ((conj(wf[i]) * wf[i+1] - 2.*wf[i] + wf[i-1])).real();
+			avg_kin += (-h*h / (2*m)) * (conj(wf[i]) * (wf[i+1] - 2.*wf[i] + wf[i-1])).real() / DEL_X;
 		}
 	}
 
@@ -343,10 +289,10 @@ double avgKinetic(vector<cdouble> wf)
 
 double avgPotential(vector<cdouble> wf)
 {
-	double avg_pot;
+	double avg_pot = 0;
 
 	for (int i=0; i<D; i++) {
-		avg_pot += (conj(wf[i]) * .5*m*w*pow(x(i),2) * wf[i]).real();
+		avg_pot += (conj(wf[i]) * .5*m*w*pow(x(i),2) * wf[i]).real() * DEL_X;
 	}
 
 	return avg_pot;
